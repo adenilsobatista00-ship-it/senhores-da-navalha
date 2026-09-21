@@ -3,159 +3,565 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Senhores da Navalha</title>
+  <title>Senhores da Navalha - Agendamento & IA</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <style>
+    :root {
+      --bg-dark: #121212;
+      --card-bg: #1e1e1e;
+      --gold: #d4af37;
+      --gold-light: #f3e5ab;
+      --gold-dark: #aa8625;
+      --text-light: #f5f5f5;
+      --text-muted: #aaaaaa;
+      --danger: #e74c3c;
+      --success: #25d366;
+    }
+
     * {
       box-sizing: border-box;
       margin: 0;
       padding: 0;
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
     }
 
     body {
-      background-color: #121212;
-      color: #f1f1f1;
+      background-color: var(--bg-dark);
+      color: var(--text-light);
+      padding: 20px 10px;
       display: flex;
       justify-content: center;
-      align-items: center;
       min-height: 100vh;
-      padding: 20px;
     }
 
     .container {
-      background-color: #1e1e24;
-      border: 1px solid #3d3d4e;
-      border-radius: 12px;
-      padding: 24px;
       width: 100%;
-      max-width: 420px;
-      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.6);
+      max-width: 500px;
+      background: var(--card-bg);
+      padding: 30px 20px;
+      border-radius: 20px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.8);
+      border: 1px solid rgba(212, 175, 55, 0.2);
     }
 
-    .header {
+    /* LOGO E CABEÇALHO */
+    .brand-header {
       text-align: center;
-      margin-bottom: 24px;
+      margin-bottom: 25px;
+      padding-bottom: 20px;
+      border-bottom: 1px solid rgba(212, 175, 55, 0.2);
     }
 
-    .header h1 {
-      color: #d4af37;
-      font-size: 1.6rem;
+    .logo-icon {
+      font-size: 3rem;
+      color: var(--gold);
+      margin-bottom: 8px;
+      filter: drop-shadow(0 0 8px rgba(212, 175, 55, 0.4));
+    }
+
+    .brand-title {
+      font-size: 1.8rem;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      background: linear-gradient(135deg, #fff 0%, var(--gold) 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      margin-bottom: 4px;
+      font-weight: 800;
+    }
+
+    .brand-slogan {
+      font-size: 0.85rem;
+      color: var(--gold-light);
+      letter-spacing: 1px;
+      text-transform: uppercase;
+    }
+
+    /* SEÇÕES */
+    .section-title {
+      font-size: 0.95rem;
       text-transform: uppercase;
       letter-spacing: 1px;
-      margin-bottom: 8px;
+      color: var(--gold);
+      margin: 20px 0 12px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
     }
 
-    .header p {
-      color: #aaa;
+    /* GRIDS E BOTÕES ARREDONDADOS */
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(110px, 1fr));
+      gap: 10px;
+      margin-bottom: 15px;
+    }
+
+    .btn {
+      background: #2a2a2a;
+      color: var(--text-light);
+      border: 1px solid #444;
+      padding: 12px 15px;
+      border-radius: 25px;
+      cursor: pointer;
       font-size: 0.9rem;
+      font-weight: 600;
+      transition: all 0.3s ease;
+      text-align: center;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 4px;
     }
 
+    .btn:hover {
+      border-color: var(--gold);
+      color: var(--gold);
+    }
+
+    .btn.selected {
+      background: linear-gradient(135deg, var(--gold) 0%, var(--gold-dark) 100%);
+      color: #000;
+      border-color: var(--gold);
+      box-shadow: 0 0 12px rgba(212, 175, 55, 0.4);
+      font-weight: 700;
+    }
+
+    .btn.disabled {
+      background: #1a1a1a;
+      color: #555;
+      border-color: #333;
+      cursor: not-allowed;
+      text-decoration: line-through;
+    }
+
+    /* PAINEL DE BLOQUEIO DE FALTAS */
+    .admin-panel {
+      background: #161616;
+      border: 1px dashed #444;
+      border-radius: 15px;
+      padding: 12px;
+      margin-bottom: 20px;
+    }
+
+    .barber-admin {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 8px 0;
+      border-bottom: 1px solid #282828;
+    }
+    .barber-admin:last-child { border-bottom: none; }
+
+    .toggle-btn {
+      background: rgba(39, 174, 96, 0.2);
+      color: #2ecc71;
+      border: 1px solid #2ecc71;
+      padding: 6px 12px;
+      border-radius: 20px;
+      cursor: pointer;
+      font-size: 0.75rem;
+      font-weight: bold;
+    }
+
+    .toggle-btn.blocked {
+      background: rgba(231, 76, 60, 0.2);
+      color: var(--danger);
+      border-color: var(--danger);
+    }
+
+    /* CHAT DE INTELIGÊNCIA ARTIFICIAL */
+    .ai-chat-box {
+      background: #161616;
+      border: 1px solid var(--gold);
+      border-radius: 15px;
+      padding: 15px;
+      margin-bottom: 25px;
+      box-shadow: 0 0 10px rgba(212, 175, 55, 0.15);
+    }
+
+    .chat-messages {
+      max-height: 160px;
+      overflow-y: auto;
+      margin-bottom: 10px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      font-size: 0.85rem;
+    }
+
+    .chat-msg {
+      padding: 8px 12px;
+      border-radius: 15px;
+      max-width: 85%;
+      line-height: 1.3;
+    }
+
+    .chat-msg.user {
+      background: #333;
+      color: #fff;
+      align-self: flex-end;
+      border-bottom-right-radius: 2px;
+    }
+
+    .chat-msg.bot {
+      background: rgba(212, 175, 55, 0.15);
+      color: var(--gold-light);
+      border: 1px solid rgba(212, 175, 55, 0.3);
+      align-self: flex-start;
+      border-bottom-left-radius: 2px;
+    }
+
+    .chat-input-group {
+      display: flex;
+      gap: 8px;
+    }
+
+    .chat-input-group input {
+      flex: 1;
+      padding: 10px 15px;
+      background: #2a2a2a;
+      border: 1px solid #444;
+      border-radius: 20px;
+      color: #fff;
+      font-size: 0.85rem;
+      outline: none;
+    }
+
+    .chat-input-group button {
+      background: var(--gold);
+      color: #000;
+      border: none;
+      padding: 10px 15px;
+      border-radius: 20px;
+      font-weight: bold;
+      cursor: pointer;
+    }
+
+    /* INPUTS DE AGENDAMENTO */
     .form-group {
-      margin-bottom: 16px;
+      margin-bottom: 15px;
     }
 
     label {
       display: block;
       margin-bottom: 6px;
       font-size: 0.85rem;
-      color: #ddd;
+      color: var(--text-muted);
     }
 
-    input, select {
+    input[type="text"], input[type="date"] {
       width: 100%;
-      padding: 12px;
-      border-radius: 8px;
-      border: 1px solid #3d3d4e;
-      background-color: #2a2a36;
+      padding: 12px 15px;
+      background: #2a2a2a;
+      border: 1px solid #444;
+      border-radius: 25px;
       color: #fff;
       font-size: 0.95rem;
       outline: none;
     }
 
-    input:focus, select:focus {
-      border-color: #d4af37;
+    input[type="text"]:focus, input[type="date"]:focus {
+      border-color: var(--gold);
     }
 
-    button {
+    /* BOTÃO WHATSAPP */
+    .submit-btn {
       width: 100%;
-      padding: 14px;
-      background-color: #d4af37;
-      color: #121212;
+      background: linear-gradient(135deg, #25d366 0%, #128c7e 100%);
+      color: white;
       border: none;
-      border-radius: 8px;
+      padding: 16px;
+      border-radius: 30px;
+      font-size: 1.05rem;
       font-weight: bold;
-      font-size: 1rem;
       cursor: pointer;
-      transition: background-color 0.2s;
-      margin-top: 10px;
+      margin-top: 20px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      box-shadow: 0 4px 15px rgba(37, 211, 102, 0.3);
+      transition: transform 0.2s ease;
     }
 
-    button:hover {
-      background-color: #f1c40f;
+    .submit-btn:hover {
+      transform: translateY(-2px);
     }
   </style>
 </head>
 <body>
 
-  <div class="container">
-    <div class="header">
-      <h1>✂️ SENHORES DA NAVALHA ✂️</h1>
-      <p>Novo Agendamento</p>
-    </div>
-
-    <form id="agendamentoForm">
-      <div class="form-group">
-        <label for="nome">Seu Nome:</label>
-        <input type="text" id="nome" placeholder="Digite seu nome completo" required>
-      </div>
-
-      <div class="form-group">
-        <label for="whatsapp">WhatsApp:</label>
-        <input type="tel" id="whatsapp" placeholder="(00) 00000-0000" required>
-      </div>
-
-      <div class="form-group">
-        <label for="servico">Serviço:</label>
-        <select id="servico" required>
-          <option value="" disabled selected>Selecione um serviço</option>
-          <option value="Corte de Cabelo">Corte de Cabelo</option>
-          <option value="Barba">Barba</option>
-          <option value="Cabelo e Barba">Cabelo & Barba</option>
-          <option value="Sobrancelha">Sobrancelha</option>
-        </select>
-      </div>
-
-      <div class="form-group">
-        <label for="dataHora">Data e Horário:</label>
-        <input type="datetime-local" id="dataHora" required>
-      </div>
-
-      <button type="submit">Agendar pelo WhatsApp</button>
-    </form>
+<div class="container">
+  
+  <!-- LOGO E MARCA -->
+  <div class="brand-header">
+    <div class="logo-icon"><i class="fa-solid fa-scissors"></i></div>
+    <div class="brand-title">SENHORES DA NAVALHA</div>
+    <div class="brand-slogan">Estilo & Tradição no Corte</div>
   </div>
 
-  <script>
-    document.getElementById('agendamentoForm').addEventListener('submit', function(e) {
-      e.preventDefault();
-      
-      const nome = document.getElementById('nome').value;
-      const whatsapp = document.getElementById('whatsapp').value;
-      const servico = document.getElementById('servico').value;
-      const dataHoraRaw = document.getElementById('dataHora').value;
-      
-      const dataObjeto = new Date(dataHoraRaw);
-      const dataFormatada = dataObjeto.toLocaleDateString('pt-BR');
-      const horaFormatada = dataObjeto.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+  <!-- CHAT DE ATENDIMENTO COM IA -->
+  <div class="ai-chat-box">
+    <div class="section-title" style="margin-top: 0; font-size: 0.85rem;">
+      <i class="fa-solid fa-robot"></i> Assistente Virtual com IA
+    </div>
+    <div class="chat-messages" id="chat-messages">
+      <div class="chat-msg bot">
+        Olá! Sou o assistente da <strong>Senhores da Navalha</strong>. Como posso te ajudar com estilos, cortes ou dúvidas sobre os barbeiros hoje?
+      </div>
+    </div>
+    <div class="chat-input-group">
+      <input type="text" id="ai-input" placeholder="Pergunte sobre cortes ou horários...">
+      <button onclick="askAI()"><i class="fa-solid fa-paper-plane"></i></button>
+    </div>
+  </div>
 
-      // Substitua pelo número de WhatsApp da barbearia (com DDD)
-      const numeroSeu = '5500000000000'; 
+  <!-- PAINEL DE AUSÊNCIA DE BARBEIROS -->
+  <div class="admin-panel">
+    <div class="section-title" style="margin-top: 0;">
+      <i class="fa-solid fa-user-gear"></i> Painel de Ausência (Barbeiros)
+    </div>
+    <div id="barbers-admin"></div>
+  </div>
 
-      const mensagem = `Olá, gostaria de agendar um horário no *Senhores da Navalha*!%0A%0A📌 *Nome:* ${nome}%0A📱 *WhatsApp:* ${whatsapp}%0A✂️ *Serviço:* ${servico}%0A📅 *Data:* ${dataFormatada}%0A⏰ *Horário:* ${horaFormatada}`;
+  <!-- 1. ESCOLHA O BARBEIRO -->
+  <div class="section-title"><i class="fa-solid fa-user-check"></i> 1. Escolha o Barbeiro</div>
+  <div class="grid" id="barber-select"></div>
 
-      const url = `https://api.whatsapp.com/send?phone=${numeroSeu}&text=${mensagem}`;
-      window.open(url, '_blank');
+  <!-- 2. ESCOLHA O SERVIÇO -->
+  <div class="section-title"><i class="fa-solid fa-list-check"></i> 2. Escolha o Serviço</div>
+  <div class="grid" id="service-select"></div>
+
+  <!-- 3. DATA E HORÁRIO -->
+  <div class="section-title"><i class="fa-solid fa-clock"></i> 3. Data e Horário</div>
+  <div class="form-group">
+    <label for="appointment-date">Data do Agendamento:</label>
+    <input type="date" id="appointment-date">
+  </div>
+  <div class="grid" id="time-select"></div>
+
+  <!-- 4. DADOS DO CLIENTE -->
+  <div class="section-title"><i class="fa-solid fa-id-card"></i> 4. Seus Dados</div>
+  <div class="form-group">
+    <label for="client-name">Nome do Cliente:</label>
+    <input type="text" id="client-name" placeholder="Digite seu nome completo">
+  </div>
+
+  <!-- BOTÃO FINALIZAR VIA WHATSAPP -->
+  <button class="submit-btn" onclick="sendWhatsApp()">
+    <i class="fa-brands fa-whatsapp" style="font-size: 1.4rem;"></i>
+    Confirmar via WhatsApp
+  </button>
+</div>
+
+<script>
+  const whatsappNumber = "48992108093"; 
+
+  const barbers = [
+    { id: 'paulo', name: 'Paulo', active: true },
+    { id: 'mateus', name: 'Mateus', active: true },
+    { id: 'joao', name: 'João', active: true }
+  ];
+
+  const services = [
+    { id: 'corte', name: 'Corte', duration: 30 },
+    { id: 'barba', name: 'Barba', duration: 30 },
+    { id: 'sobrancelha', name: 'Sobrancelha', duration: 30 },
+    { id: 'protese', name: 'Prótese Capilar', duration: 180 }
+  ];
+
+  let selectedBarber = null;
+  let selectedService = null;
+  let selectedTime = null;
+
+  document.getElementById('appointment-date').valueAsDate = new Date();
+  document.getElementById('appointment-date').addEventListener('change', generateTimeSlots);
+
+  function askAI() {
+    const input = document.getElementById('ai-input');
+    const text = input.value.trim();
+    if (!text) return;
+
+    const chatBox = document.getElementById('chat-messages');
+    
+    chatBox.innerHTML += `<div class="chat-msg user">${text}</div>`;
+    input.value = '';
+    chatBox.scrollTop = chatBox.scrollHeight;
+
+    setTimeout(() => {
+      let reply = "";
+      const lower = text.toLowerCase();
+
+      const barberPaulo = barbers.find(b => b.id === 'paulo');
+      const barberMateus = barbers.find(b => b.id === 'mateus');
+      const barberJoao = barbers.find(b => b.id === 'joao');
+
+      if (lower.includes("paulo")) {
+        reply = barberPaulo.active 
+          ? "O barbeiro <strong>Paulo</strong> está disponível para agendamentos hoje!" 
+          : "Infelizmente o barbeiro <strong>Paulo</strong> está ausente/indisponível no momento.";
+      } else if (lower.includes("mateus")) {
+        reply = barberMateus.active 
+          ? "O barbeiro <strong>Mateus</strong> está disponível para agendamentos hoje!" 
+          : "Infelizmente o barbeiro <strong>Mateus</strong> está ausente/indisponível no momento.";
+      } else if (lower.includes("joão") || lower.includes("joao")) {
+        reply = barberJoao.active 
+          ? "O barbeiro <strong>João</strong> está disponível para agendamentos hoje!" 
+          : "Infelizmente o barbeiro <strong>João</strong> está ausente/indisponível no momento.";
+      } 
+      else if (lower.includes("prótese") || lower.includes("protese")) {
+        reply = "A Prótese Capilar é um procedimento especial com duração de 3 horas. Certifique-se de escolher um horário com antecedência suficiente antes do fim do turno!";
+      } else if (lower.includes("corte") || lower.includes("cabelo") || lower.includes("estilo")) {
+        reply = "Realizamos cortes modernos (Fade, Degradê, Americano) e clássicos. O tempo estimado por corte é de 30 minutos.";
+      } else if (lower.includes("barba") || lower.includes("sobrancelha")) {
+        reply = "Nossos serviços de Barba e Sobrancelha levam cerca de 30 minutos cada e incluem alinhamento completo com navalha.";
+      } 
+      else {
+        const availableBarbers = barbers.filter(b => b.active).map(b => b.name);
+        const blockedBarbers = barbers.filter(b => !b.active).map(b => b.name);
+
+        reply = "Atendemos das 09:00 às 12:00 e das 14:00 às 20:00!<br>";
+
+        if (availableBarbers.length > 0) {
+          reply += `Barbeiros disponíveis: <strong>${availableBarbers.join(', ')}</strong>.<br>`;
+        }
+        if (blockedBarbers.length > 0) {
+          reply += `Barbeiros ausentes: <strong style="color:var(--danger);">${blockedBarbers.join(', ')}</strong>.`;
+        }
+      }
+
+      chatBox.innerHTML += `<div class="chat-msg bot">${reply}</div>`;
+      chatBox.scrollTop = chatBox.scrollHeight;
+    }, 500);
+  }
+
+  function renderAdmin() {
+    const container = document.getElementById('barbers-admin');
+    container.innerHTML = '';
+    barbers.forEach(barber => {
+      container.innerHTML += `
+        <div class="barber-admin">
+          <span style="font-size:0.9rem;"><strong>${barber.name}</strong>: ${barber.active ? '<span style="color:#2ecc71;">Disponível</span>' : '<span style="color:#e74c3c;">Ausente</span>'}</span>
+          <button class="toggle-btn ${!barber.active ? 'blocked' : ''}" onclick="toggleBarber('${barber.id}')">
+            ${barber.active ? 'Bloquear' : 'Desbloquear'}
+          </button>
+        </div>
+      `;
     });
-  </script>
+  }
+
+  function toggleBarber(id) {
+    const barber = barbers.find(b => b.id === id);
+    if (barber) {
+      barber.active = !barber.active;
+      if (selectedBarber === barber.id) selectedBarber = null;
+      renderAdmin();
+      renderBarbers();
+    }
+  }
+
+  function renderBarbers() {
+    const container = document.getElementById('barber-select');
+    container.innerHTML = '';
+    barbers.forEach(barber => {
+      const btn = document.createElement('button');
+      btn.className = `btn ${!barber.active ? 'disabled' : ''} ${selectedBarber === barber.id ? 'selected' : ''}`;
+      btn.innerText = barber.name;
+      btn.disabled = !barber.active;
+      btn.onclick = () => {
+        selectedBarber = barber.id;
+        renderBarbers();
+      };
+      container.appendChild(btn);
+    });
+  }
+
+  function renderServices() {
+    const container = document.getElementById('service-select');
+    container.innerHTML = '';
+    services.forEach(service => {
+      const btn = document.createElement('button');
+      btn.className = `btn ${selectedService?.id === service.id ? 'selected' : ''}`;
+      btn.innerHTML = `<span>${service.name}</span><small style="opacity:0.8; font-size:0.75rem;">${service.duration} min</small>`;
+      btn.onclick = () => {
+        selectedService = service;
+        renderServices();
+        generateTimeSlots();
+      };
+      container.appendChild(btn);
+    });
+  }
+
+  function generateTimeSlots() {
+    const container = document.getElementById('time-select');
+    container.innerHTML = '';
+    
+    if (!selectedService) {
+      container.innerHTML = '<p style="grid-column: 1/-1; text-align: center; color: #888; font-size:0.85rem;">Selecione um serviço primeiro.</p>';
+      return;
+    }
+
+    const duration = selectedService.duration;
+    const slots = [];
+
+    const shifts = [
+      { start: 9 * 60, end: 12 * 60 },
+      { start: 14 * 60, end: 20 * 60 }
+    ];
+
+    shifts.forEach(shift => {
+      for (let time = shift.start; time + duration <= shift.end; time += 30) {
+        const hours = Math.floor(time / 60).toString().padStart(2, '0');
+        const minutes = (time % 60).toString().padStart(2, '0');
+        slots.push(`${hours}:${minutes}`);
+      }
+    });
+
+    slots.forEach(timeStr => {
+      const btn = document.createElement('button');
+      btn.className = `btn ${selectedTime === timeStr ? 'selected' : ''}`;
+      btn.innerText = timeStr;
+      btn.onclick = () => {
+        selectedTime = timeStr;
+        generateTimeSlots();
+      };
+      container.appendChild(btn);
+    });
+  }
+
+  function sendWhatsApp() {
+    const name = document.getElementById('client-name').value.trim();
+    const date = document.getElementById('appointment-date').value;
+
+    if (!selectedBarber) return alert('Selecione um barbeiro.');
+    if (!selectedService) return alert('Selecione um serviço.');
+    if (!selectedTime) return alert('Selecione um horário.');
+    if (!name) return alert('Digite seu nome completo.');
+
+    const barberObj = barbers.find(b => b.id === selectedBarber);
+    const formattedDate = date.split('-').reverse().join('/');
+
+    const message = `*SENHORES DA NAVALHA - NOVO AGENDAMENTO*\n` +
+      `-----------------------------------\n` +
+      `*Cliente:* ${name}\n` +
+      `*Barbeiro:* ${barberObj.name}\n` +
+      `*Serviço:* ${selectedService.name}\n` +
+      `*Duração:* ${selectedService.duration} min\n` +
+      `*Data:* ${formattedDate}\n` +
+      `*Horário:* ${selectedTime}\n` +
+      `-----------------------------------\n` +
+      `Gostaria de confirmar meu agendamento!`;
+
+    const apiUrl = `https://api.whatsapp.com/send?phone=${whatsappNumber}&text=${encodeURIComponent(message)}`;
+    window.open(apiUrl, '_blank');
+  }
+
+  renderAdmin();
+  renderBarbers();
+  renderServices();
+</script>
 
 </body>
 </html>
